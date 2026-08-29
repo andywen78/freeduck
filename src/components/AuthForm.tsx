@@ -110,9 +110,19 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
         </div>
 
         <div>
-          <label className="label" htmlFor="pw">
-            密碼
-          </label>
+          <div className="flex items-baseline justify-between">
+            <label className="label" htmlFor="pw">
+              密碼
+            </label>
+            {!isSignup && (
+              <Link
+                href="/forgot-password"
+                className="mb-1.5 text-xs font-semibold text-ink-muted hover:text-brand-600"
+              >
+                忘記密碼？
+              </Link>
+            )}
+          </div>
           <input
             id="pw"
             type="password"
