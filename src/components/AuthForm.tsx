@@ -152,7 +152,7 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
 
         {linkError && !msg && (
           <p className="rounded-xl bg-warn-bg px-3 py-2.5 text-sm text-warn">
-            信件連結沒辦法用（可能過期，或不是用同一個瀏覽器開）。直接在下面登入即可。
+            信件連結已經用過或過期了。如果你剛完成信箱驗證，直接在下面登入即可。
           </p>
         )}
 
