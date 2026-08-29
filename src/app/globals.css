@@ -1,0 +1,173 @@
+@import 'tailwindcss';
+
+/* =====================================================================
+   有空鴨 FreeDuck — 設計系統
+   溫暖親和：珊瑚橘主色 + 鴨黃點綴 + 奶油底，圓角 16px
+   ===================================================================== */
+@theme {
+  --color-brand-50: #fff1ec;
+  --color-brand-100: #ffe0d5;
+  --color-brand-200: #ffc4b0;
+  --color-brand-300: #ff9d7d;
+  --color-brand-400: #ff8263;
+  --color-brand-500: #ff6b4a; /* 主色 珊瑚橘 */
+  --color-brand-600: #ed4f2b;
+  --color-brand-700: #c73c1c;
+  --color-brand-800: #a3331a;
+
+  --color-duck-300: #ffdc8a;
+  --color-duck-400: #ffc145; /* 鴨嘴黃 */
+  --color-duck-500: #f0a92c;
+
+  --color-ink: #1c1917;
+  --color-ink-soft: #57534e;
+  --color-ink-muted: #8b8178;
+
+  --color-cream: #fff8f3;
+  --color-surface: #ffffff;
+  --color-line: #f1e2d7;
+  --color-line-strong: #e4cfc0;
+
+  --color-ok: #15803d;
+  --color-ok-bg: #eafaf0;
+  --color-warn: #b45309;
+  --color-warn-bg: #fff6e6;
+
+  --radius-card: 1rem;
+  --shadow-soft: 0 1px 2px rgb(28 25 23 / 0.04), 0 8px 24px -12px rgb(28 25 23 / 0.12);
+  --shadow-lift: 0 2px 4px rgb(28 25 23 / 0.05), 0 16px 32px -14px rgb(237 79 43 / 0.22);
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background: var(--color-cream);
+    color: var(--color-ink);
+    font-feature-settings: 'tnum' 1;
+  }
+  /* 表單元件在 iOS 上字體 <16px 會觸發自動縮放 */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+  ::selection {
+    background: var(--color-brand-200);
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-surface;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .card-hover {
+    @apply transition-all duration-200;
+  }
+  .card-hover:hover {
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-2px);
+    border-color: var(--color-brand-200);
+  }
+
+  /* Tailwind 4 無法 @apply 自訂 class，所以共用樣式用選擇器並列而非繼承 */
+  .btn,
+  .btn-primary,
+  .btn-ghost,
+  .btn-soft {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5
+           text-sm font-semibold transition-all duration-150 select-none
+           disabled:cursor-not-allowed disabled:opacity-45;
+  }
+
+  .btn-primary {
+    @apply bg-brand-500 text-white;
+    box-shadow: 0 4px 14px -4px rgb(237 79 43 / 0.5);
+  }
+  .btn-primary:hover:not(:disabled) {
+    @apply bg-brand-600;
+    transform: translateY(-1px);
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .btn-ghost {
+    @apply border border-line-strong bg-surface text-ink;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    @apply border-brand-300 text-brand-600;
+  }
+
+  .btn-soft {
+    @apply bg-brand-50 text-brand-700;
+  }
+  .btn-soft:hover:not(:disabled) {
+    @apply bg-brand-100;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-line-strong bg-surface px-3.5 py-2.5
+           text-ink outline-none transition
+           placeholder:text-ink-muted;
+  }
+  .field:focus {
+    @apply border-brand-400;
+    box-shadow: 0 0 0 3px rgb(255 107 74 / 0.15);
+  }
+
+  .label {
+    @apply mb-1.5 block text-sm font-semibold text-ink-soft;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-line
+           bg-brand-50/60 px-2.5 py-1 text-xs font-medium text-ink-soft;
+  }
+
+  .pill-tab {
+    @apply flex-1 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-200;
+  }
+  .pill-tab-on {
+    @apply bg-surface text-brand-600;
+    box-shadow: var(--shadow-soft);
+  }
+  .pill-tab-off {
+    @apply text-ink-soft;
+  }
+  .pill-tab-off:hover {
+    @apply text-ink;
+  }
+
+  .skel {
+    @apply animate-pulse rounded-xl bg-line/70;
+  }
+}
+
+/* 進場動畫：卡片列表逐一浮現 */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-rise {
+  animation: rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .card-hover,
+  .btn {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
