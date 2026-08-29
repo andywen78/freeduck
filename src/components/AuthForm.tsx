@@ -9,7 +9,9 @@ import { isSupabaseConfigured } from '@/lib/supabase/config';
 
 export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
   const router = useRouter();
-  const next = useSearchParams().get('next') || '/me';
+  const params = useSearchParams();
+  const next = params.get('next') || '/me';
+  const linkError = params.get('error') === 'link';
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -34,7 +36,11 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { display_name: name.trim() } },
+          options: {
+            data: { display_name: name.trim() },
+            // 沒指定的話會導回 Site URL（首頁），使用者點完確認信還是登出狀態
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
         });
         if (error) throw error;
         if (!data.session) {
@@ -46,8 +52,10 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-      router.push(next);
-      router.refresh();
+      // 整頁導向：確保 auth cookie 隨著 document 請求送出，proxy 才看得到 session。
+      // 用 router.push 會跟 proxy 搶時間，導回 /login 卻停在同一個元件，按鈕永遠卡在「處理中」。
+      window.location.assign(next);
+      return;
     } catch (err) {
       const text = err instanceof Error ? err.message : '發生未知錯誤';
       setMsg({
@@ -57,7 +65,13 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
             ? '帳號或密碼不對'
             : text === 'User already registered'
               ? '這個 Email 已經註冊過了，直接登入吧'
-              : text,
+              : /only request this after (\d+) seconds/i.test(text)
+                ? `剛剛才寄過一封，請等 ${text.match(/after (\d+) seconds/i)?.[1] ?? 60} 秒再試。`
+                : /email rate limit|over_email_send_rate/i.test(text)
+                  ? '系統寄信額度暫時用完了，請過一小時再試。'
+                  : /Email not confirmed/i.test(text)
+                    ? '這個帳號還沒點過確認信，請先到信箱完成驗證。'
+                    : text,
       });
       setBusy(false);
     }
@@ -135,6 +149,12 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
             required
           />
         </div>
+
+        {linkError && !msg && (
+          <p className="rounded-xl bg-warn-bg px-3 py-2.5 text-sm text-warn">
+            信件連結沒辦法用（可能過期，或不是用同一個瀏覽器開）。直接在下面登入即可。
+          </p>
+        )}
 
         {msg && (
           <p
