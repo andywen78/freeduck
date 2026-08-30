@@ -32,6 +32,14 @@ export const CATEGORIES: Category[] = [
   { id: 'hospital', name: '陪同就醫', group: '照護陪伴', emoji: '🏥' },
   { id: 'postpartum', name: '月嫂幫手', group: '照護陪伴', emoji: '👶' },
 
+  // 生活陪伴
+  { id: 'shopping', name: '陪逛街', group: '生活陪伴', emoji: '🛍️' },
+  { id: 'dining', name: '陪吃飯', group: '生活陪伴', emoji: '🍜' },
+  { id: 'workout', name: '陪運動', group: '生活陪伴', emoji: '🏃' },
+  { id: 'queue', name: '代排隊', group: '生活陪伴', emoji: '🎫' },
+  { id: 'exhibit', name: '陪看展', group: '生活陪伴', emoji: '🖼️' },
+  { id: 'errand', name: '陪同辦事', group: '生活陪伴', emoji: '📝' },
+
   // 寵物服務
   { id: 'dog_walk', name: '遛狗', group: '寵物服務', emoji: '🐕', featured: true },
   { id: 'pet_sit', name: '寵物保母', group: '寵物服務', emoji: '🐈' },
