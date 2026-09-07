@@ -162,7 +162,7 @@ export default function Home() {
         <p className="mt-1 text-sm text-ink-soft">
           攤販、家長、寵物主 —— 這些人在人力銀行開不了職缺，卻天天需要人。
         </p>
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {FEATURED.map((c, i) => (
             <Link
               key={c.id}
