@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { Avatar, Stars } from '@/components/Avatar';
 import { InviteDialog } from '@/components/InviteDialog';
 import { ReviewList, type Review } from '@/components/ReviewList';
+import type { Reply } from '@/components/ReviewReply';
+import { SafetyActions } from '@/components/SafetyActions';
 import { categoryOf } from '@/lib/categories';
 import { DEMO_WORKERS } from '@/lib/demo';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
@@ -19,10 +21,15 @@ import {
 export const dynamic = 'force-dynamic';
 
 type Loaded = {
-  profile: Pick<Profile, 'id' | 'display_name' | 'avatar_url' | 'bio' | 'city' | 'district' | 'rating_avg' | 'rating_count'>;
+  profile: Pick<Profile, 'id' | 'display_name' | 'avatar_url' | 'bio' | 'city' | 'district' | 'rating_avg' | 'rating_count'> & {
+    status?: string;
+  };
   services: Service[];
   availabilities: Availability[];
   reviews: Review[];
+  replies: Record<string, Reply>;
+  viewerId: string | null;
+  blocked: boolean;
 };
 
 /** 示範模式：從假資料組出同樣的結構 */
@@ -56,6 +63,9 @@ function fromDemo(id: string): Loaded | null {
       },
     ],
     reviews: [],
+    replies: {},
+    viewerId: null,
+    blocked: false,
   };
 }
 
@@ -76,10 +86,15 @@ export default async function WorkerPage({
     const supabase = await supabaseServer();
     const nowUtc = utcNowNaive();
 
-    const [p, s, a, rv] = await Promise.all([
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const viewerId = user?.id ?? null;
+
+    const [p, s, a, rv, bl] = await Promise.all([
       supabase
         .from('profiles')
-        .select('id, display_name, avatar_url, bio, city, district, rating_avg, rating_count')
+        .select('id, display_name, avatar_url, bio, city, district, rating_avg, rating_count, status')
         .eq('id', id)
         .maybeSingle(),
       supabase.from('services').select('*').eq('user_id', id).eq('is_active', true),
@@ -92,14 +107,29 @@ export default async function WorkerPage({
         .order('date')
         .order('start_time'),
       supabase.rpc('reviews_of', { p_user: id }),
+      // blocks 的 RLS 只讓人看到自己封鎖了誰，所以這裡撈到就代表是「我封鎖了他」
+      viewerId
+        ? supabase.from('blocks').select('blocked_id').eq('blocker_id', viewerId).eq('blocked_id', id)
+        : Promise.resolve({ data: [] as { blocked_id: string }[] }),
     ]);
+
+    const reviews = (rv.data as Review[]) ?? [];
+    const ids = reviews.map((r) => r.id);
+    const rp = ids.length
+      ? await supabase.from('review_replies').select('review_id, body, created_at').in('review_id', ids)
+      : { data: [] as { review_id: string; body: string; created_at: string }[] };
 
     loaded = p.data
       ? {
           profile: p.data as Loaded['profile'],
           services: (s.data as Service[]) ?? [],
           availabilities: (a.data as Availability[]) ?? [],
-          reviews: (rv.data as Review[]) ?? [],
+          reviews,
+          replies: Object.fromEntries(
+            (rp.data ?? []).map((r) => [r.review_id, { body: r.body, created_at: r.created_at }]),
+          ),
+          viewerId,
+          blocked: ((bl.data as { blocked_id: string }[] | null) ?? []).length > 0,
         }
       : null;
   } else {
@@ -107,7 +137,22 @@ export default async function WorkerPage({
   }
 
   if (!loaded) notFound();
-  const { profile, services, availabilities, reviews } = loaded;
+  const { profile, services, availabilities, reviews, replies, viewerId, blocked } = loaded;
+
+  // 停權的帳號只留一句話，服務、時段、評價、邀約全部不出現
+  if (profile.status && profile.status !== 'active') {
+    return (
+      <div className="mx-auto max-w-2xl">
+        <div className="card px-5 py-10 text-center">
+          <p className="text-3xl">🦆</p>
+          <p className="mt-3 font-bold">這個帳號已停權</p>
+          <p className="mt-1 text-sm text-ink-soft">
+            內容已下架。如果你正在跟這個人接洽，請多加留意。
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const byDate = availabilities.reduce<Record<string, Availability[]>>((acc, a) => {
     (acc[a.date] ??= []).push(a);
@@ -191,6 +236,15 @@ export default async function WorkerPage({
         reviews={reviews}
         avg={profile.rating_avg}
         count={profile.rating_count}
+        replies={replies}
+        canReplyAs={viewerId === profile.id ? viewerId : null}
+      />
+
+      {/* ------------------------------------------------ 檢舉 / 封鎖 */}
+      <SafetyActions
+        targetId={profile.id}
+        targetName={profile.display_name}
+        initialBlocked={blocked}
       />
 
       {/* -------------------------------------------------------- 邀約 */}

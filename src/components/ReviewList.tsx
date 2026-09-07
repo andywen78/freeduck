@@ -1,4 +1,5 @@
 import { Avatar } from './Avatar';
+import { ReviewReply, type Reply } from './ReviewReply';
 import { StarRow } from './StarInput';
 
 export type Review = {
@@ -20,10 +21,16 @@ export function ReviewList({
   reviews,
   avg,
   count,
+  replies = {},
+  canReplyAs = null,
 }: {
   reviews: Review[];
   avg: number;
   count: number;
+  /** review_id → 該則評價的公開回應 */
+  replies?: Record<string, Reply>;
+  /** 看的人就是被評的本人時，帶入他的 id，才會出現回應入口 */
+  canReplyAs?: string | null;
 }) {
   // 5→1 星各有幾則。長條長度用「總則數」當分母，等於直接看百分比
   // （用最多的那一列當分母的話，只有 1 則評價也會畫成滿格，會誤導）
@@ -115,6 +122,11 @@ export function ReviewList({
                     {r.comment}
                   </p>
                 )}
+                <ReviewReply
+                  reviewId={r.id}
+                  existing={replies[r.id] ?? null}
+                  canReplyAs={canReplyAs}
+                />
               </div>
             ))}
           </div>

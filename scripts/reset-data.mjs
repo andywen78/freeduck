@@ -47,6 +47,8 @@ const TABLES = [
   ['conversations', '對話'],
   ['messages', '訊息'],
   ['reviews', '評價'],
+  ['review_replies', '評價回應'],
+  ['blocks', '封鎖'],
 ];
 
 async function counts() {

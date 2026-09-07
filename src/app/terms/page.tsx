@@ -70,7 +70,9 @@ export default function TermsPage() {
         <Bullets
           items={[
             '只有實際成立且時段已結束的委託，雙方才能互評，一次委託各評一次。',
-            '評價送出後不可修改或刪除。請先確認再送出。',
+            '評價送出後你無法自行修改或刪除。請先確認再送出。',
+            '被評價的一方可以在該則評價下公開回應一次，回應同樣送出即定案。',
+            '若經檢舉查證評價違反本條款（人身攻擊、洩漏個資、不實內容等），我們得將其隱藏，該則評分也不再計入星等。',
             '禁止以評價進行人身攻擊、洩漏個資，或以撤除負評作為交換條件。',
           ]}
         />
@@ -97,9 +99,12 @@ export default function TermsPage() {
           必要時配合司法機關調查。
         </p>
         <p className="text-ink-muted">
-          說明：本平台目前
-          <span className="font-semibold text-ink">尚未提供站內檢舉功能</span>，
-          遇到違規情形請來信<a href="mailto:freeduck.tw@gmail.com" className="font-semibold text-brand-600 underline underline-offset-2">freeduck.tw@gmail.com</a>。我們不會即時審查所有內容。
+          說明：每個人的公開頁面下方都有
+          <span className="font-semibold text-ink">檢舉</span>與
+          <span className="font-semibold text-ink">封鎖</span>。檢舉會寄到
+          <a href="mailto:freeduck.tw@gmail.com" className="font-semibold text-brand-600 underline underline-offset-2">freeduck.tw@gmail.com</a>
+          由人工處理；封鎖則立即生效，你們不會再出現在彼此的搜尋結果，也無法互相邀約。
+          我們不會即時審查所有內容。
         </p>
       </Section>
 

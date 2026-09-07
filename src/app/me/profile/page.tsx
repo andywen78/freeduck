@@ -158,7 +158,9 @@ export default function ProfilePage() {
         <div className="rounded-xl border border-line bg-cream p-4">
           <p className="text-sm font-bold">聯絡方式</p>
           <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-            🔒 只有<span className="font-semibold text-ink">邀約被接受後</span>的對方看得到。
+            🔒 兩道關卡：先要<span className="font-semibold text-ink">邀約被接受</span>，
+            對方才有資格向你索取；再等你按下<span className="font-semibold text-ink">同意</span>，
+            他才看得到。同意是單向的 —— 你想看對方的，要自己另外提出請求。
             不會出現在公開頁面或搜尋結果。
           </p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
