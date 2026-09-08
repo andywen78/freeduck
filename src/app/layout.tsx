@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/next';
 import type { Metadata, Viewport } from 'next';
 import { Noto_Sans_TC } from 'next/font/google';
 import './globals.css';
@@ -43,6 +44,8 @@ export default async function RootLayout({
           <Footer />
           <BottomBar />
         </NotificationProvider>
+        {/* 冷啟動期間要分辨「沒人來」和「來了但沒註冊」，這兩件事的解法完全不同 */}
+        <Analytics />
       </body>
     </html>
   );
