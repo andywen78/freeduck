@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
+import { TimeSelect } from './TimeSelect';
 import { CATEGORIES, CATEGORY_GROUPS } from '@/lib/categories';
 import { CITIES, districtsOf } from '@/lib/taiwan';
 import { toISODate } from '@/lib/types';
@@ -100,23 +101,11 @@ export function Filters({
         <div className="animate-rise mt-4 grid gap-3 border-t border-line pt-4 sm:grid-cols-4">
           <div>
             <label className="label">最早幾點</label>
-            <input
-              type="time"
-              value={v.start}
-              step={900}
-              onChange={(e) => set('start', e.target.value)}
-              className="field"
-            />
+            <TimeSelect value={v.start} onChange={(t) => set('start', t)} emptyLabel="不限" />
           </div>
           <div>
             <label className="label">最晚到幾點</label>
-            <input
-              type="time"
-              value={v.end}
-              step={900}
-              onChange={(e) => set('end', e.target.value)}
-              className="field"
-            />
+            <TimeSelect value={v.end} onChange={(t) => set('end', t)} emptyLabel="不限" />
           </div>
           <div>
             <label className="label">縣市</label>

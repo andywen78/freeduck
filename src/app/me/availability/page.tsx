@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MonthCalendar } from '@/components/MonthCalendar';
 import { NeedsSetup, Loading } from '@/components/NeedsSetup';
 import { Tabs } from '@/components/Tabs';
+import { TimeSelect } from '@/components/TimeSelect';
 import { supabaseBrowser } from '@/lib/supabase/client';
 import { useUser } from '@/lib/useUser';
 import { formatDate, hhmm, toISODate, utcNowNaive, type Availability } from '@/lib/types';
@@ -154,23 +155,11 @@ export default function AvailabilityPage() {
           <div className="grid grid-cols-2 gap-3 border-t border-line pt-5">
             <div>
               <label className="label">從幾點</label>
-              <input
-                type="time"
-                step={900}
-                value={start}
-                onChange={(e) => setStart(e.target.value)}
-                className="field"
-              />
+              <TimeSelect value={start} onChange={setStart} />
             </div>
             <div>
               <label className="label">到幾點</label>
-              <input
-                type="time"
-                step={900}
-                value={end}
-                onChange={(e) => setEnd(e.target.value)}
-                className="field"
-              />
+              <TimeSelect value={end} onChange={setEnd} />
             </div>
           </div>
 

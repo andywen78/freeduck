@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
+import { TimeSelect } from './TimeSelect';
 import { CATEGORIES, CATEGORY_GROUPS } from '@/lib/categories';
 import { supabaseBrowser } from '@/lib/supabase/client';
 import { CITIES, districtsOf } from '@/lib/taiwan';
@@ -163,25 +164,11 @@ export function JobForm({
         </div>
         <div>
           <label className="label">開始</label>
-          <input
-            type="time"
-            step={900}
-            className="field"
-            value={f.start_time}
-            onChange={(e) => set('start_time', e.target.value)}
-            required
-          />
+          <TimeSelect value={f.start_time} onChange={(v) => set('start_time', v)} />
         </div>
         <div>
           <label className="label">結束</label>
-          <input
-            type="time"
-            step={900}
-            className="field"
-            value={f.end_time}
-            onChange={(e) => set('end_time', e.target.value)}
-            required
-          />
+          <TimeSelect value={f.end_time} onChange={(v) => set('end_time', v)} />
         </div>
       </div>
 
