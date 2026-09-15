@@ -1,7 +1,11 @@
+import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { AuthForm } from '@/components/AuthForm';
 
-export const metadata = { title: '登入 — 有空鴨' };
+export const metadata: Metadata = {
+  title: '登入',
+  robots: { index: false, follow: true },
+};
 
 export default function Page() {
   return (

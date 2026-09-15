@@ -1,7 +1,12 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Bullets, LegalPage, Section } from '@/components/Legal';
 
-export const metadata = { title: '使用條款 — 有空鴨' };
+export const metadata: Metadata = {
+  title: '使用條款',
+  description: '使用有空鴨的規則：平台不經手金流、不擔任仲介，以及帳號停權與內容移除的條件。',
+  alternates: { canonical: '/terms' },
+};
 
 export default function TermsPage() {
   return (

@@ -8,6 +8,7 @@ import { Footer } from '@/components/Legal';
 import { SetupBanner } from '@/components/SetupBanner';
 import { currentProfile } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from '@/lib/seo';
 
 const noto = Noto_Sans_TC({
   subsets: ['latin'],
@@ -17,10 +18,29 @@ const noto = Noto_Sans_TC({
 });
 
 export const metadata: Metadata = {
-  title: '有空鴨 — 有空啊？把你的空檔擺出來',
-  description:
-    '不是求職網。你把有空的時段和能做的事擺上來，缺人的店家、攤販、家長直接來預約。家教、遛狗、到府清潔、顧小孩、擺攤幫手，一人多技能各自報價。',
+  // 有了 metadataBase，各頁的 canonical 與 og:image 才組得出絕對網址
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    // 子頁只要給自己的名字，後綴由這裡統一補
+    template: `%s｜${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
   keywords: ['打工', '兼職', '短期工作', '家教', '遛狗', '到府清潔', '零工', '接案'],
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    locale: 'zh_TW',
+    url: SITE_URL,
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export const viewport: Viewport = {
@@ -44,6 +64,35 @@ export default async function RootLayout({
           <Footer />
           <BottomBar />
         </NotificationProvider>
+        {/* 讓 Google 知道「有空鴨」是這個網域的品牌名，品牌詞才搶得回來 */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@graph': [
+                {
+                  '@type': 'Organization',
+                  '@id': `${SITE_URL}/#org`,
+                  name: SITE_NAME,
+                  alternateName: 'FreeDuck',
+                  url: SITE_URL,
+                  logo: `${SITE_URL}/opengraph-image.png`,
+                  description: SITE_DESCRIPTION,
+                  areaServed: { '@type': 'Country', name: '台灣' },
+                },
+                {
+                  '@type': 'WebSite',
+                  '@id': `${SITE_URL}/#website`,
+                  name: SITE_NAME,
+                  url: SITE_URL,
+                  inLanguage: 'zh-Hant-TW',
+                  publisher: { '@id': `${SITE_URL}/#org` },
+                },
+              ],
+            }),
+          }}
+        />
         {/* 冷啟動期間要分辨「沒人來」和「來了但沒註冊」，這兩件事的解法完全不同 */}
         <Analytics />
       </body>

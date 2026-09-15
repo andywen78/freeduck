@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Avatar, Stars } from '@/components/Avatar';
 import { InviteDialog } from '@/components/InviteDialog';
@@ -6,7 +7,9 @@ import type { Reply } from '@/components/ReviewReply';
 import { SafetyActions } from '@/components/SafetyActions';
 import { categoryOf } from '@/lib/categories';
 import { DEMO_WORKERS } from '@/lib/demo';
+import { clampDescription, pageTitle, SITE_URL } from '@/lib/seo';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
+import { supabaseAnon } from '@/lib/supabase/anon';
 import { supabaseServer } from '@/lib/supabase/server';
 import {
   formatDate,
@@ -66,6 +69,84 @@ function fromDemo(id: string): Loaded | null {
     replies: {},
     viewerId: null,
     blocked: false,
+  };
+}
+
+/** generateMetadata 只需要這幾欄，不必背整個 Profile */
+type MetaProfile = Pick<Profile, 'display_name' | 'bio' | 'city' | 'district'>;
+type MetaService = Pick<Service, 'category_id' | 'rate' | 'rate_unit'>;
+
+/** 搜尋結果上真正在賣的那一行：誰、在哪、能做什麼、多少錢。 */
+function describe(p: MetaProfile, services: MetaService[]) {
+  const where = [p.city, p.district].filter(Boolean).join('');
+  const names = services.map((s) => categoryOf(s.category_id)?.name).filter(Boolean);
+  // 標題只留三項——搜尋結果大約 30 個中文字就截斷，列滿六項等於後面全被吃掉
+  const what = names.length
+    ? names.slice(0, 3).join('、') + (names.length > 3 ? ` 等 ${names.length} 項` : '')
+    : '多項服務';
+  const cheapest = services
+    .map((s) => formatRate(s.rate, s.rate_unit))
+    .find((r) => r !== '面議');
+
+  const title = [p.display_name, [where, what].filter(Boolean).join(' ')]
+    .filter(Boolean)
+    .join(' · ');
+
+  const description = clampDescription(
+    p.bio?.trim() ||
+      `${p.display_name}${where ? `在${where}` : ''}提供${what}${cheapest ? `，${cheapest} 起` : ''}。查看有空的時段，直接線上預約。`,
+  );
+
+  return { title, description, what, where };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+
+  let p: MetaProfile | null = null;
+  let services: MetaService[] = [];
+
+  if (isSupabaseConfigured) {
+    const supabase = supabaseAnon();
+    const [prof, svc] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('display_name, bio, city, district, status')
+        .eq('id', id)
+        .maybeSingle(),
+      supabase.from('services').select('category_id, rate, rate_unit').eq('user_id', id).eq('is_active', true),
+    ]);
+
+    // 停權帳號的頁面只剩一句「已停權」，別讓它帶著漂亮標題留在搜尋結果裡
+    const row = prof.data as (MetaProfile & { status?: string }) | null;
+    if (row && row.status && row.status !== 'active') {
+      return { title: '這個帳號已停權', robots: { index: false, follow: false } };
+    }
+    p = row;
+    services = (svc.data as MetaService[]) ?? [];
+  } else {
+    const w = DEMO_WORKERS.find((d) => d.worker_id === id);
+    if (w) {
+      p = { display_name: w.display_name, bio: w.bio, city: w.city, district: w.district };
+      services = w.services ?? [];
+    }
+  }
+
+  if (!p) return { title: '找不到這個人', robots: { index: false, follow: false } };
+
+  const { title, description } = describe(p, services);
+  const url = `/worker/${id}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { type: 'profile', url, title: pageTitle(title), description },
+    twitter: { card: 'summary_large_image', title: pageTitle(title), description },
   };
 }
 
@@ -159,8 +240,52 @@ export default async function WorkerPage({
     return acc;
   }, {});
 
+  const seo = describe(profile, services);
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+      {/* 本地服務的搜尋結果吃 Person + Offer：地區、項目、價格、評分 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Person',
+            '@id': `${SITE_URL}/worker/${profile.id}#person`,
+            name: profile.display_name,
+            url: `${SITE_URL}/worker/${profile.id}`,
+            description: seo.description,
+            ...(profile.avatar_url ? { image: profile.avatar_url } : {}),
+            ...(seo.where
+              ? { address: { '@type': 'PostalAddress', addressLocality: seo.where, addressCountry: 'TW' } }
+              : {}),
+            ...(profile.rating_count > 0
+              ? {
+                  aggregateRating: {
+                    '@type': 'AggregateRating',
+                    ratingValue: profile.rating_avg,
+                    reviewCount: profile.rating_count,
+                  },
+                }
+              : {}),
+            makesOffer: services.map((s) => ({
+              '@type': 'Offer',
+              itemOffered: {
+                '@type': 'Service',
+                name: s.title || categoryOf(s.category_id)?.name || '服務',
+                ...(seo.where ? { areaServed: seo.where } : {}),
+              },
+              ...(s.rate != null && s.rate_unit !== 'negotiable'
+                ? {
+                    price: s.rate,
+                    priceCurrency: 'TWD',
+                    unitText: s.rate_unit === 'daily' ? '日' : '小時',
+                  }
+                : {}),
+            })),
+          }),
+        }}
+      />
       {/* ---------------------------------------------------------- 頭 */}
       <section className="card p-5 sm:p-6">
         <div className="flex items-start gap-4">

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ApplyButton } from '@/components/ApplyButton';
@@ -5,11 +6,50 @@ import { Avatar } from '@/components/Avatar';
 import type { JobWithEmployer } from '@/components/JobCard';
 import { categoryOf } from '@/lib/categories';
 import { DEMO_JOBS } from '@/lib/demo';
+import { clampDescription, pageTitle } from '@/lib/seo';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
+import { supabaseAnon } from '@/lib/supabase/anon';
 import { supabaseServer } from '@/lib/supabase/server';
 import { formatDate, formatRate, hhmm } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+
+  let job: Pick<JobWithEmployer, 'title' | 'description' | 'city' | 'district' | 'date' | 'rate' | 'rate_unit' | 'category_id'> | null = null;
+
+  if (isSupabaseConfigured) {
+    const supabase = supabaseAnon();
+    const { data } = await supabase
+      .from('jobs')
+      .select('title, description, city, district, date, rate, rate_unit, category_id')
+      .eq('id', id)
+      .maybeSingle();
+    job = data as typeof job;
+  } else {
+    job = DEMO_JOBS.find((j) => j.id === id) ?? null;
+  }
+
+  if (!job) return { title: '找不到這筆工作', robots: { index: false, follow: false } };
+
+  const where = `${job.city}${job.district}`;
+  const title = `${job.title} · ${where} ${formatRate(job.rate, job.rate_unit)}`;
+
+  return {
+    title,
+    description: clampDescription(
+      job.description?.trim() ||
+        `${where}徵${categoryOf(job.category_id)?.name ?? '幫手'}，${formatDate(job.date)}，${formatRate(job.rate, job.rate_unit)}。`,
+    ),
+    alternates: { canonical: `/jobs/${id}` },
+    openGraph: { type: 'article', url: `/jobs/${id}`, title: pageTitle(title) },
+  };
+}
 
 export default async function JobDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

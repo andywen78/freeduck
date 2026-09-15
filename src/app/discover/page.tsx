@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Filters, type FilterValues } from '@/components/Filters';
 import { WorkerCard } from '@/components/WorkerCard';
 import { EmptyState } from '@/components/EmptyState';
@@ -5,7 +6,38 @@ import { categoryOf } from '@/lib/categories';
 import { DEMO_WORKERS } from '@/lib/demo';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
 import { supabaseServer } from '@/lib/supabase/server';
+import { clampDescription } from '@/lib/seo';
 import type { WorkerHit } from '@/lib/types';
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<SP>;
+}): Promise<Metadata> {
+  const sp = await searchParams;
+  const cat = categoryOf(one(sp, 'category'))?.name;
+  const city = one(sp, 'city');
+  const district = one(sp, 'district');
+  const filtered = !!(cat || city || district);
+
+  const where = `${city}${district}`;
+  const title = filtered
+    ? `${where}${where && cat ? ' ' : ''}${cat ?? ''}有空的人`.trim()
+    : '找有空的人';
+
+  return {
+    title,
+    description: clampDescription(
+      filtered
+        ? `瀏覽${where || '全台'}提供${cat ?? '各項服務'}、目前有空檔的人，看時段直接預約。`
+        : '依日期、時段、地區、服務類型，找出現在有空檔的人，直接線上預約。不必等人來應徵。',
+    ),
+    alternates: { canonical: '/discover' },
+    // 冷啟動期間篩選後多半是空清單，收錄空頁面只會拉低整站評價；
+    // 等各垂直有密度了再開放，或改成有內容的獨立路由。
+    robots: filtered ? { index: false, follow: true } : undefined,
+  };
+}
 
 export const dynamic = 'force-dynamic';
 

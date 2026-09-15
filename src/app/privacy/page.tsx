@@ -1,6 +1,11 @@
+import type { Metadata } from 'next';
 import { Bullets, LegalPage, Section } from '@/components/Legal';
 
-export const metadata = { title: '隱私權政策 — 有空鴨' };
+export const metadata: Metadata = {
+  title: '隱私權政策',
+  description: '有空鴨蒐集哪些資料、怎麼用、你可以怎麼要求刪除。',
+  alternates: { canonical: '/privacy' },
+};
 
 export default function PrivacyPage() {
   return (

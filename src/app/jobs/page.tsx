@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState';
 import { Filters, type FilterValues } from '@/components/Filters';
@@ -5,7 +6,16 @@ import { JobCard, type JobWithEmployer } from '@/components/JobCard';
 import { DEMO_JOBS } from '@/lib/demo';
 import { isSupabaseConfigured } from '@/lib/supabase/config';
 import { supabaseServer } from '@/lib/supabase/server';
+import { clampDescription } from '@/lib/seo';
 import { utcNowNaive } from '@/lib/types';
+
+export const metadata: Metadata = {
+  title: '短期工作與零工機會',
+  description: clampDescription(
+    '看看有誰正在找人：短期工作、單次零工、活動幫手。時間、地點、報酬都寫清楚，直接應徵。',
+  ),
+  alternates: { canonical: '/jobs' },
+};
 
 export const dynamic = 'force-dynamic';
 
