@@ -38,5 +38,11 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  // robots.txt 與 sitemap.xml 要排除：它們沒有登入狀態可言，跑這支
+  // middleware 等於每次爬取都多一次 supabase.auth.getUser() 的網路往返。
+  // Supabase 一慢，爬蟲就可能等到逾時，Search Console 會直接記成「無法擷取」。
+  // （opengraph-image.png 已被下面的副檔名規則擋掉，不必另外列。）
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 };
