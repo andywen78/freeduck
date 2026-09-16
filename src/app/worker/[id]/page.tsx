@@ -5,6 +5,7 @@ import { InviteDialog } from '@/components/InviteDialog';
 import { ReviewList, type Review } from '@/components/ReviewList';
 import type { Reply } from '@/components/ReviewReply';
 import { SafetyActions } from '@/components/SafetyActions';
+import { ShareProfile } from '@/components/ShareProfile';
 import { categoryOf } from '@/lib/categories';
 import { DEMO_WORKERS } from '@/lib/demo';
 import { clampDescription, pageTitle, SITE_URL } from '@/lib/seo';
@@ -98,6 +99,39 @@ function describe(p: MetaProfile, services: MetaService[]) {
   );
 
   return { title, description, what, where };
+}
+
+/**
+ * 貼到社團／限動的現成文案。
+ *
+ * 自己看到的是第一人稱（他是要去招生意的），別人看到的是第三人稱介紹。
+ * 網址不寫在這裡 —— ShareProfile 會自己接在最後，才不會重複。
+ */
+function shareText(
+  p: Pick<Profile, 'display_name' | 'city' | 'district'>,
+  services: Service[],
+  availabilities: Availability[],
+  owner: boolean,
+): string {
+  const where = [p.city, p.district].filter(Boolean).join('');
+  const what = services
+    .slice(0, 3)
+    .map((s) => `${categoryOf(s.category_id)?.name ?? '服務'} ${formatRate(s.rate, s.rate_unit)}`)
+    .join('、');
+  const when = availabilities
+    .slice(0, 3)
+    .map((a) => `${formatDate(a.date)} ${hhmm(a.start_time)}–${hhmm(a.end_time)}`)
+    .join('、');
+
+  return [
+    owner ? '我在有空鴨擺出了空檔 🦆' : `${where ? `${where} ` : ''}${p.display_name}．有空鴨`,
+    when && `${owner ? '有空的時段' : '最近有空'}：${when}`,
+    what && `能做：${what}`,
+    owner && where && `地點：${where}`,
+    owner ? '想約的話點連結，直接選時段 👇' : '點連結可以直接選時段預約 👇',
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 export async function generateMetadata({
@@ -355,6 +389,15 @@ export default async function WorkerPage({
           )}
         </div>
       </section>
+
+      {/* -------------------------------------------------------- 分享 */}
+      {(services.length > 0 || availabilities.length > 0) && (
+        <ShareProfile
+          url={`${SITE_URL}/worker/${profile.id}`}
+          text={shareText(profile, services, availabilities, viewerId === profile.id)}
+          owner={viewerId === profile.id}
+        />
+      )}
 
       {/* -------------------------------------------------------- 評價 */}
       <ReviewList
