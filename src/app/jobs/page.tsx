@@ -88,7 +88,7 @@ export default async function JobsPage({ searchParams }: { searchParams: Promise
             讓人來找你。
           </p>
         </div>
-        <Link href="/jobs/new" className="btn-ghost hidden shrink-0 sm:inline-flex">
+        <Link href="/jobs/quick" className="btn-ghost hidden shrink-0 sm:inline-flex">
           發布工作
         </Link>
       </header>

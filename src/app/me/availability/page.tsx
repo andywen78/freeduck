@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { MonthCalendar } from '@/components/MonthCalendar';
 import { NeedsSetup, Loading } from '@/components/NeedsSetup';
+import { SlotDraftBanner } from '@/components/SlotDraftBanner';
 import { Tabs } from '@/components/Tabs';
 import { TimeSelect } from '@/components/TimeSelect';
 import { supabaseBrowser } from '@/lib/supabase/client';
@@ -137,6 +138,9 @@ export default function AvailabilityPage() {
 
   return (
     <div className="space-y-6">
+      {/* 從空檔計算機過來的人，這裡把他點好的表直接填進去 */}
+      <SlotDraftBanner userId={userId} onDone={load} />
+
       <header>
         <Link href="/me" className="text-sm font-semibold text-ink-muted hover:text-brand-600">
           ← 我的頁面

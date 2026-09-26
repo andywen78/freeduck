@@ -11,6 +11,10 @@ const STATIC: MetadataRoute.Sitemap = [
   { url: SITE_URL, changeFrequency: 'daily', priority: 1 },
   { url: `${SITE_URL}/discover`, changeFrequency: 'daily', priority: 0.9 },
   { url: `${SITE_URL}/jobs`, changeFrequency: 'daily', priority: 0.7 },
+  // 這兩頁不靠站上的人也有內容，是冷啟動期間唯一能被搜到的東西
+  { url: `${SITE_URL}/how-much`, changeFrequency: 'monthly', priority: 0.8 },
+  { url: `${SITE_URL}/rates`, changeFrequency: 'weekly', priority: 0.8 },
+  { url: `${SITE_URL}/pond`, changeFrequency: 'daily', priority: 0.6 },
   { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.2 },
   { url: `${SITE_URL}/terms`, changeFrequency: 'yearly', priority: 0.2 },
 ];

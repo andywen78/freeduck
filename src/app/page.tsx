@@ -111,6 +111,13 @@ export default function Home() {
                   找出有空的人
                 </button>
               </form>
+
+              <p className="mt-3 text-center text-sm text-ink-soft">
+                沒找到合適的？
+                <Link href="/jobs/quick" className="font-semibold text-brand-600 underline">
+                  30 秒說你要找什麼人
+                </Link>
+              </p>
             </div>
           ) : (
             <div key="work" className="animate-rise">
@@ -147,8 +154,8 @@ export default function Home() {
                 <Link href="/signup" className="btn-primary !py-3 text-base">
                   免費建立我的空檔
                 </Link>
-                <Link href="/jobs" className="btn-ghost !py-3 text-base">
-                  先看看有什麼工作
+                <Link href="/how-much" className="btn-ghost !py-3 text-base">
+                  先算算我的空檔值多少
                 </Link>
               </div>
             </div>

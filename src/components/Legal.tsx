@@ -59,6 +59,20 @@ export function Footer() {
   return (
     <footer className="mx-auto max-w-5xl px-4 pb-28 pt-10 md:pb-10">
       <div className="border-t border-line pt-6 text-center text-xs leading-relaxed text-ink-muted">
+        {/* 這幾頁不需要登入也有內容，放在頁尾讓搜尋引擎與路人都找得到 */}
+        <p className="mb-2">
+          <Link href="/pond" className="font-semibold hover:text-brand-600">
+            鴨池
+          </Link>
+          <span className="mx-2">·</span>
+          <Link href="/how-much" className="font-semibold hover:text-brand-600">
+            空檔計算機
+          </Link>
+          <span className="mx-2">·</span>
+          <Link href="/rates" className="font-semibold hover:text-brand-600">
+            行情參考
+          </Link>
+        </p>
         <p>
           <Link href="/terms" className="font-semibold hover:text-brand-600">
             使用條款
