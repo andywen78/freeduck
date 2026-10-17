@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Filters, type FilterValues } from '@/components/Filters';
+import type { NoteColor } from '@/components/Note';
 import { WorkerCard } from '@/components/WorkerCard';
 import { EmptyState } from '@/components/EmptyState';
 import { categoryOf } from '@/lib/categories';
@@ -100,6 +101,25 @@ export default async function DiscoverPage({
 
   const cat = categoryOf(f.category);
 
+  // 便條顏色依「第一次出現的順序」輪流配，同一個人整頁同色；
+  // 人少的時候用雜湊配色很容易整排撞同一色
+  const NOTE_COLORS: NoteColor[] = [
+    'yellow',
+    'pink',
+    'blue',
+    'white',
+    'green',
+    'orange',
+    'lavender',
+    'kraft',
+  ];
+  const colorOf = new Map<string, NoteColor>();
+  for (const h of hits) {
+    if (!colorOf.has(h.worker_id)) {
+      colorOf.set(h.worker_id, NOTE_COLORS[colorOf.size % NOTE_COLORS.length]);
+    }
+  }
+
   return (
     <div className="space-y-5">
       <header>
@@ -128,9 +148,9 @@ export default async function DiscoverPage({
           <p className="text-sm font-semibold text-ink-soft">
             找到 {hits.length} 個可預約的時段
           </p>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="cork-board -mx-4 grid gap-x-6 gap-y-9 px-4 py-8 sm:mx-0 sm:grid-cols-2 sm:px-8">
             {hits.map((h, i) => (
-              <WorkerCard key={h.availability_id} hit={h} index={i} />
+              <WorkerCard key={h.availability_id} hit={h} index={i} color={colorOf.get(h.worker_id)} />
             ))}
           </div>
         </>

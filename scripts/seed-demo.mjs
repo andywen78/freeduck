@@ -4,6 +4,7 @@
  *   node scripts/seed-demo.mjs            # 只列出會建什麼，不執行
  *   node scripts/seed-demo.mjs --yes      # 真的建立
  *   node scripts/seed-demo.mjs --remove   # 把示範帳號全部刪掉
+ *   node scripts/seed-demo.mjs --refresh-slots  # 既有帳號從今天起重排空檔（舊的過期了）
  *
  * 五個人都設定成「本業之外想接點零工」的一般人，分散在不同行業與地區，
  * 服務項目與空檔都照各自的作息排 —— 值班的排平日白天、幼教的排週末。
@@ -181,7 +182,9 @@ function nextWeekday(target) {
 
 const mode = process.argv.includes('--remove')
   ? 'remove'
-  : process.argv.includes('--yes')
+  : process.argv.includes('--refresh-slots')
+    ? 'refresh'
+    : process.argv.includes('--yes')
     ? 'create'
     : 'dry';
 
@@ -196,6 +199,28 @@ try {
     console.log(rows.length ? `已刪除 ${rows.length} 個示範帳號：` : '沒有示範帳號可刪');
     rows.forEach((r) => console.log('  ·', r.email));
     console.log('\n服務、空檔、工作、邀約都會連鎖刪掉（外鍵 on delete cascade）。');
+  } else if (mode === 'refresh') {
+    // 空檔只排 DAYS_AHEAD 天，過了就從 /discover 消失；只補空檔，不動帳號與服務
+    await client.query('begin');
+    for (const p of PEOPLE) {
+      const { rows } = await client.query('select id from auth.users where email = $1', [p.email]);
+      if (!rows.length) {
+        console.log(`− ${p.name} 不存在，先跑 --yes`);
+        continue;
+      }
+      let added = 0;
+      for (const [date, start, end] of slotsFor(p.pattern)) {
+        const r = await client.query(
+          `insert into public.availabilities (user_id, date, start_time, end_time)
+           values ($1, $2, $3, $4)
+           on conflict (user_id, date, start_time, end_time) do nothing`,
+          [rows[0].id, date, start, end],
+        );
+        added += r.rowCount;
+      }
+      console.log(`✓ ${p.name}  新增空檔 ${added}`);
+    }
+    await client.query('commit');
   } else if (mode === 'dry') {
     console.log(`預演 —— 加 --yes 才會真的建立\n`);
     for (const p of PEOPLE) {
@@ -297,7 +322,7 @@ try {
     console.log('要收掉的時候跑：node scripts/seed-demo.mjs --remove');
   }
 } catch (e) {
-  if (mode === 'create') await client.query('rollback').catch(() => {});
+  if (mode === 'create' || mode === 'refresh') await client.query('rollback').catch(() => {});
   console.error('✗ 失敗：', e.message);
   process.exitCode = 1;
 } finally {

@@ -1,6 +1,6 @@
 import { Analytics } from '@vercel/analytics/next';
 import type { Metadata, Viewport } from 'next';
-import { Noto_Sans_TC } from 'next/font/google';
+import { Iansui, Noto_Sans_TC } from 'next/font/google';
 import './globals.css';
 import { BottomBar, TopBar } from '@/components/Nav';
 import { NotificationProvider } from '@/components/Notifications';
@@ -15,6 +15,14 @@ const noto = Noto_Sans_TC({
   weight: ['400', '500', '700', '900'],
   display: 'swap',
   variable: '--font-noto',
+});
+
+// 芫荽：手寫感字型，用在公佈欄便條與大標，讓頁面像鄰居貼的紙條而不是平台
+const iansui = Iansui({
+  weight: '400',
+  display: 'swap',
+  preload: false,
+  variable: '--font-hand',
 });
 
 export const metadata: Metadata = {
@@ -55,7 +63,7 @@ export default async function RootLayout({
   const profile = isSupabaseConfigured ? await currentProfile() : null;
 
   return (
-    <html lang="zh-Hant-TW" className={noto.variable}>
+    <html lang="zh-Hant-TW" className={`${noto.variable} ${iansui.variable}`}>
       <body className={`${noto.className} min-h-dvh antialiased`}>
         <NotificationProvider>
           <SetupBanner />

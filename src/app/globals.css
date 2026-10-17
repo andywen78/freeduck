@@ -2,7 +2,7 @@
 
 /* =====================================================================
    有空鴨 FreeDuck — 設計系統
-   溫暖親和：珊瑚橘主色 + 鴨黃點綴 + 奶油底，圓角 16px
+   里民公佈欄：水泥牆灰底 + 印章紅按鈕 + 便利貼色，方正小圓角
    ===================================================================== */
 @theme {
   --color-brand-50: #fff1ec;
@@ -23,10 +23,10 @@
   --color-ink-soft: #57534e;
   --color-ink-muted: #8b8178;
 
-  --color-cream: #fff8f3;
+  --color-cream: #f2f2ee; /* 名稱沿用，實際是公佈欄旁的水泥牆灰 */
   --color-surface: #ffffff;
-  --color-line: #f1e2d7;
-  --color-line-strong: #e4cfc0;
+  --color-line: #e2e0d9;
+  --color-line-strong: #c9c5bb;
 
   --color-ok: #15803d;
   --color-ok-bg: #eafaf0;
@@ -34,8 +34,19 @@
   --color-warn-bg: #fff6e6;
 
   --radius-card: 1rem;
-  --shadow-soft: 0 1px 2px rgb(28 25 23 / 0.04), 0 8px 24px -12px rgb(28 25 23 / 0.12);
-  --shadow-lift: 0 2px 4px rgb(28 25 23 / 0.05), 0 16px 32px -14px rgb(237 79 43 / 0.22);
+  --shadow-soft: 0 1px 0 rgb(28 25 23 / 0.06);
+  --shadow-lift: 0 1px 0 rgb(28 25 23 / 0.06);
+
+  /* 公佈欄便條紙 */
+  --color-note-yellow: #fbe77a;
+  --color-note-pink: #f8c8c0;
+  --color-note-blue: #c9e4ee;
+  --color-note-green: #d4eaa2;
+  --color-note-orange: #fcc58f;
+  --color-note-lavender: #dccff2;
+  --color-note-kraft: #e6cfa6;
+  --color-cork: #c49a68;
+  --color-frame: #6f4a2a;
 }
 
 @layer base {
@@ -60,7 +71,7 @@
 
 @layer components {
   .card {
-    @apply rounded-2xl border border-line bg-surface;
+    @apply rounded-lg border border-line bg-surface;
     box-shadow: var(--shadow-soft);
   }
 
@@ -68,9 +79,7 @@
     @apply transition-all duration-200;
   }
   .card-hover:hover {
-    box-shadow: var(--shadow-lift);
-    transform: translateY(-2px);
-    border-color: var(--color-brand-200);
+    border-color: var(--color-ink-muted);
   }
 
   /* Tailwind 4 無法 @apply 自訂 class，所以共用樣式用選擇器並列而非繼承 */
@@ -78,28 +87,23 @@
   .btn-primary,
   .btn-ghost,
   .btn-soft {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-5 py-2.5
            text-sm font-semibold transition-all duration-150 select-none
            disabled:cursor-not-allowed disabled:opacity-45;
   }
 
   .btn-primary {
-    @apply bg-brand-500 text-white;
-    box-shadow: 0 4px 14px -4px rgb(237 79 43 / 0.5);
+    @apply bg-brand-600 text-white;
   }
   .btn-primary:hover:not(:disabled) {
-    @apply bg-brand-600;
-    transform: translateY(-1px);
-  }
-  .btn-primary:active:not(:disabled) {
-    transform: translateY(0);
+    @apply bg-brand-700;
   }
 
   .btn-ghost {
     @apply border border-line-strong bg-surface text-ink;
   }
   .btn-ghost:hover:not(:disabled) {
-    @apply border-brand-300 text-brand-600;
+    @apply border-ink text-ink;
   }
 
   .btn-soft {
@@ -110,13 +114,13 @@
   }
 
   .field {
-    @apply w-full rounded-xl border border-line-strong bg-surface px-3.5 py-2.5
+    @apply w-full rounded-md border border-line-strong bg-surface px-3.5 py-2.5
            text-ink outline-none transition
            placeholder:text-ink-muted;
   }
   .field:focus {
-    @apply border-brand-400;
-    box-shadow: 0 0 0 3px rgb(255 107 74 / 0.15);
+    @apply border-ink;
+    box-shadow: 0 0 0 2px rgb(28 25 23 / 0.12);
   }
 
   .label {
@@ -124,8 +128,8 @@
   }
 
   .chip {
-    @apply inline-flex items-center gap-1 rounded-full border border-line
-           bg-brand-50/60 px-2.5 py-1 text-xs font-medium text-ink-soft;
+    @apply inline-flex items-center gap-1 rounded-md border border-line
+           bg-surface px-2.5 py-1 text-xs font-medium text-ink-soft;
   }
 
   .pill-tab {
@@ -140,6 +144,18 @@
   }
   .pill-tab-off:hover {
     @apply text-ink;
+  }
+
+  /* 軟木公佈欄：木框 + 軟木顆粒 */
+  .cork-board {
+    @apply border-[10px] border-frame sm:rounded-sm;
+    background-color: var(--color-cork);
+    background-image:
+      radial-gradient(rgb(90 55 25 / 0.28) 1px, transparent 1.6px),
+      radial-gradient(rgb(255 236 200 / 0.25) 1px, transparent 1.6px);
+    background-size: 7px 7px, 11px 11px;
+    background-position: 0 0, 3px 5px;
+    box-shadow: inset 0 2px 10px rgb(0 0 0 / 0.35);
   }
 
   .skel {
