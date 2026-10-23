@@ -43,7 +43,8 @@ export const config = {
   // Supabase 一慢，爬蟲就可能等到逾時，Search Console 會直接記成「無法擷取」。
   // 動態分享卡 /worker/*/opengraph-image 同理，而且它沒有副檔名，被下面的
   // 副檔名規則漏掉 —— FB、LINE 抓卡片時每次都會多跑一次 getUser()。
+  // /sim 是轉給外部的當沖模擬器（next.config rewrites），跟本站登入無關。
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*/opengraph-image|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!sim(?:/|$)|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*/opengraph-image|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
